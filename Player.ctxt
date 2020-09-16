@@ -1,0 +1,27 @@
+#BlueJ class context
+comment0.target=Player
+comment0.text=\n\ Write\ a\ description\ of\ class\ Player\ here.\n\n\ @author\ (your\ name)\n\ @version\ (a\ version\ number\ or\ a\ date)\n
+comment1.params=
+comment1.target=Player()
+comment1.text=\n\ Constructor\ for\ objects\ of\ class\ Player\n
+comment10.params=
+comment10.target=void\ increasePenalty()
+comment11.params=
+comment11.target=void\ increaseBonus()
+comment2.params=
+comment2.target=java.lang.String\ getName()
+comment3.params=name
+comment3.target=void\ setName(java.lang.String)
+comment4.params=
+comment4.target=int\ getPosition()
+comment5.params=position
+comment5.target=void\ setPosition(int)
+comment6.params=
+comment6.target=int\ getPenalty()
+comment7.params=penalty
+comment7.target=void\ setPenalty(int)
+comment8.params=
+comment8.target=int\ getBonus()
+comment9.params=bonus
+comment9.target=void\ setBonus(int)
+numComments=12
