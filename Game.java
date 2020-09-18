@@ -11,8 +11,6 @@ public class Game
     private Player player1;
     private Player player2;
     private Dice dice;
-    private boolean gameStart;
-    private String lastResult;
 
     /**
      * Constructor for objects of class Game
@@ -22,8 +20,6 @@ public class Game
         player1 = new Player();
         player2 = new Player();
         dice = new Dice();
-        gameStart = false;
-        lastResult = "";
     }
 
     private void displayMenu()
@@ -42,6 +38,7 @@ public class Game
     {
         Scanner sc = new Scanner(System.in);
         boolean continous = true;
+        boolean gameStart = false;
         while(continous)
         {
             displayMenu();
@@ -49,16 +46,16 @@ public class Game
             switch(choice)
             {
                 case 1:
-                checkStart();
-                // setPlayerName();
+                checkStart(gameStart);
+                gameStart = true;
                 break;
 
                 case 2:
-                playOneRound();
+                gameStart = playOneRound(gameStart);
                 break;
 
                 case 3:
-                displayPosition();
+                displayPosition(gameStart);
                 break;
 
                 case 4:
@@ -66,45 +63,24 @@ public class Game
                 break;
 
                 case 5:
-                // example 1
-                // continous = false;
-
-                // example 2
-                // System.exit(0);
-
-                // example 3
-                exitGame();
+                continous = false;
                 break;
 
                 default:
                 System.out.println("Error! Please enter a number between 1-5!");
                 break;
             }
-
-            // use if
-            // if(choice == 1)
-            // setPlayerName();
-            // else if(choice == 2)
-            // playOneRound();
-            // else if (choice == 3)
-            // displayPosition();
-            // else if(choice == 4)
-            // displayHelp();
-            // else if(choice == 5)
-            // exitGame();
-            // else
-            // System.out.println("Error! Please enter a number between 1-5!");
         }
     }
 
-    private void checkStart()
+    private void checkStart(boolean gameStart)
     {
         Scanner sc = new Scanner(System.in);
         if(gameStart)
         {
             System.out.println("Do you want to start a new game?");
             System.out.println("Enter 1 to start a new game");
-            String input = sc.nextLine();
+            String input = sc.nextLine().trim();
             if(input.equals("1"))
                 setPlayerName();
         }
@@ -115,191 +91,135 @@ public class Game
     private void setPlayerName()
     {
         Scanner sc = new Scanner(System.in);
-
         //player 1
         System.out.print("Enter First Player's Name: ");
-        String name1 = sc.nextLine();
-        // if name.trim().length() == 0
-        // name.trim().equals(null) X
-        while(name1.trim().equals(""))
+        String name1 = sc.nextLine().trim();
+        while(!checkName(name1))
         {
             System.out.println("Error! Please enter a valid name!");
             System.out.print("Enter First Player's Name: ");
             name1 = sc.nextLine();
         }
         player1 = new Player();
-        player1.setName(name1.trim());
+        player1.setName(name1);
         //player 2
         String name2 = "";
         do{
             System.out.print("Enter Second Player's Name: ");
-            name2 = sc.nextLine();
+            name2 = sc.nextLine().trim();
         }
-        while(name2.trim().length() == 0);
+        while(!checkName(name2));
         player2 = new Player();
-        player2.setName(name2.trim());
-
-        gameStart = true;
-
+        player2.setName(name2);
     }
 
-    private void playOneRound()
+    private boolean checkName(String name)
     {
-        if(!gameStart && lastResult.equals(""))
-        {
+        if(name.length() == 0)
+            return false;
+        for(int i = 0;i<name.length();i++)
+            if(!Character.isLetter(name.charAt(i)))
+                return false;
+        return true;
+    }
+
+    private boolean playOneRound(boolean gameStart)
+    {
+        if(!gameStart && player1.getName().length() == 0)// position = 0 or no name
             System.out.println("Error: players has not been set up!");
-        }
-        else if(!gameStart && lastResult.length() != 0)
+        else if(!gameStart && player1.getPosition() != 0)
         {
             System.out.println("Game finished. You must start a new game");
-            System.out.println(lastResult);
+            if(player1.getPosition() >= 50 && player2.getPosition() < 50)
+                System.out.println("The last game was won by Player " + player1.getName());
+            else if (player2.getPosition() >= 50 && player1.getPosition() < 50)
+                System.out.println("The last game was won by Player " + player2.getName());
+            else if (player1.getPosition() >= 50 && player2.getPosition() >= 50)
+                System.out.println("*** The last game was even ***");
         }
         else{
-            // player 1 roll dice
-            int previous1 = player1.getPosition();
-            int rollNumber1 = dice.rollDice();
-            int nowPosition1 = previous1 + rollNumber1;
-            // check penalty
-            if(checkPenalty(nowPosition1))
-            {
-                int newPosition1 = nowPosition1 - 5;
-                player1.setPosition(newPosition1);
-                // penalty + 1, no increase method
-                // int penalty = player1.getPenalty() + 1
-                // player1.setPenalty(penalty)
-                player1.increasePenalty(); // need increase method
-                System.out.println(player1.getName() + " rolled a " + rollNumber1 + ", and moves from position " + previous1 +" to " + newPosition1 + " [Penalty applied]");
-            }
-            // check bonus - twice
-            else if(checkBonus(nowPosition1))
-            {
-                System.out.println(player1.getName() + " rolled a " + rollNumber1 + ", and moves from position " + previous1 +" to " + nowPosition1 + " [Bonus Immunity Roll]");
-                // second roll
-                int newRoll1 = dice.rollDice();
-                int newPosition1 = nowPosition1 + newRoll1;
-                player1.setPosition(newPosition1);
-                // get,set bonus + 1
-                player1.increaseBonus();
-                System.out.println(player1.getName() + " rolled a " + newRoll1 + ", and moves from position " + nowPosition1 +" to " + newPosition1);
-            }
-            else
-            {
-                player1.setPosition(nowPosition1);
-                System.out.println(player1.getName() + " rolled a " + rollNumber1 + ", and moves from position " + previous1 +" to " + nowPosition1);
-            }
-
-            // player 2
-            int previous2 = player2.getPosition();
-            int rollNumber2 = dice.rollDice();
-            int nowPosition2 = previous2 + rollNumber2;
-            // check penalty
-            if(checkPenalty(nowPosition2))
-            {
-                int newPosition2 = nowPosition2 - 5;
-                player2.setPosition(newPosition2);
-                // penalty + 1, no increase method
-                // int penalty = player2.getPenalty() + 1
-                // player2.setPenalty(penalty)
-                player2.increasePenalty();
-                System.out.println(player2.getName() + " rolled a " + rollNumber2 + ", and moves from position " + previous2 +" to " + newPosition2 + " [Penalty applied]");
-            }
-            // check bonus - twice
-            else if(checkBonus(nowPosition2))
-            {
-                System.out.println(player2.getName() + " rolled a " + rollNumber2 + ", and moves from position " + previous2 +" to " + nowPosition2 + " [Bonus Immunity Roll]");
-                // second roll
-                int newRoll2 = dice.rollDice();
-                int newPosition2 = nowPosition2 + newRoll2;
-                player2.setPosition(newPosition2);
-                // get,set bonus + 1
-                player2.increaseBonus();
-                System.out.println(player2.getName() + " rolled a " + newRoll2 + ", and moves from position " + nowPosition2 +" to " + newPosition2);
-            }
-            else
-            {
-                player2.setPosition(nowPosition2);
-                System.out.println(player2.getName() + " rolled a " + rollNumber2 + ", and moves from position " + previous2 +" to " + nowPosition2);
-            }
-
-            // p1 > p2 >=50
-            // p1 >= 50 > p2
-
-            // p2 > p1 >= 50
-            // p2 >= 50 > p1
-
-            // p1 = p2 >= 50
-
+            player1 = rollDice(player1);
+            player2 = rollDice(player2);
             if(player1.getPosition() >= 50 && player1.getPosition() > player2.getPosition())
             {
                 gameStart = false;
                 System.out.println("*** Congratulations, "+ player1.getName() +" have WON this game!! ***");
-                lastResult = "The last game was won by Player " + player1.getName();
             }
             else if(player2.getPosition() >= 50 && player2.getPosition() > player1.getPosition())
             {
                 gameStart = false;
                 System.out.println("*** Congratulations, "+ player2.getName() +" have WON this game!! ***");
-                lastResult = "The last game was won by Player " + player2.getName();
             }
             else if( player1.getPosition() == player2.getPosition() && player2.getPosition() >= 50)
             {
                 gameStart = false;
-                System.out.println("*** This game is even ***");
-                lastResult = "Last game was even";
+                System.out.println("*** This game is draw ***");
             }
         }
-
+        return gameStart;
     }
 
-    private boolean checkPenalty(int position)
+    private Player rollDice(Player player)
     {
-        if(position % 11 == 0 && position < 50)
-            return true;
-        else
-            return false;
-    }
-
-    private boolean checkBonus(int position)
-    {
-        if(position % 5 == 0 && position % 10 != 0 && position <= 35)
-            return true;
-        else
-            return false;
-    }
-
-    private void displayPosition()
-    {
-        if(!gameStart && lastResult.equals(""))
+        int previous = player.getPosition();
+        int rollNumber = dice.rollDice();
+        int nowPosition = previous + rollNumber;
+        // check penalty
+        if(nowPosition % 11 == 0 && nowPosition < 50)
         {
-            System.out.println("Error: players has not been set up!");
+            int newPosition = nowPosition - 5;
+            player.setPosition(newPosition);
+            player.increasePenalty();
+            System.out.println(player.getName() + " rolled a " + rollNumber + ", and moves from position " + previous +" to " + newPosition + " [Penalty applied]");
         }
-        else if(!gameStart && lastResult.length() != 0)
+        // check bonus - twice
+        else if(nowPosition % 5 == 0 && nowPosition % 10 != 0 && nowPosition <= 35)
+        {
+            System.out.println(player.getName() + " rolled a " + rollNumber + ", and moves from position " + previous +" to " + nowPosition + " [Bonus Immunity Roll]");
+            // second roll
+            int newRoll = dice.rollDice();
+            int newPosition = nowPosition + newRoll;
+            player.setPosition(newPosition);
+            // get,set bonus + 1
+            player.increaseBonus();
+            System.out.println(player.getName() + " rolled a " + newRoll + ", and moves from position " + nowPosition +" to " + newPosition);
+        }
+        else
+        {
+            player.setPosition(nowPosition);
+            System.out.println(player.getName() + " rolled a " + rollNumber + ", and moves from position " + previous +" to " + nowPosition);
+        }
+        return player;
+    }
+
+    private void displayPosition(boolean gameStart)
+    {
+        if(!gameStart && player1.getName().length() == 0)// position = 0 or no name
+            System.out.println("Error: players has not been set up!");
+        else if(!gameStart && player1.getPosition() != 0)
         {
             System.out.println("Game finished. You must start a new game");
-            System.out.println(lastResult);
+            if(player1.getPosition() >= 50 && player2.getPosition() < 50)
+                System.out.println("The last game was won by Player " + player1.getName());
+            else if (player2.getPosition() >= 50 && player1.getPosition() < 50)
+                System.out.println("The last game was won by Player " + player2.getName());
+            else if (player1.getPosition() >= 50 && player2.getPosition() >= 50)
+                System.out.println("*** The last game was draw ***");
         }
         else
         {
-            System.out.println("Player " + player1.getName() + " is on position " + player1.getPosition() + " [Penalties: " + player1.getPenalty() + ", Bonuses: " + player1.getBonus() + "]");
-            System.out.println(String.format("Player %s is on position %s [Penalties: %s, Bonuses: %s]", player2.getName(), player2.getPosition(), player2.getPenalty(), player2.getBonus()));
+            System.out.println(displayPosition(player1));
+            System.out.println(displayPosition(player2));
         }
+    }
+
+    private String displayPosition(Player player)
+    {
+        return String.format("Player %s is on position %s [Penalties: %s, Bonuses: %s]", player.getName(), player.getPosition(), player.getPenalty(), player.getBonus());
     }
 
     private void displayHelp()
     {
         System.out.println("This is game help ... ");
     }
-
-    private void exitGame()
-    {
-        System.out.println("Are you sure to exit game?");
-        System.out.println("Enter 1 to exit, enter others to continue");
-        Scanner sc = new Scanner(System.in);
-        String input = sc.nextLine();
-        if(input.equals("1"))
-        {
-            System.exit(0);
-        }
-    }
-
 }
